@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: commute-optimizer
+    runtime: php
+    repo: https://github.com/ScepticMaku/smart-commute
+    branch: master
+    buildCommand: |
+      composer install --no-dev
+      composer update
+      npm install
+      php artisan migrate
+      php artisan db:seed
+      rm -rf venv
+      python3 -m venv venv
+      source venv/bin/activate
+      pip install -r requirements.txt
+    startCommand: |
+      php artisan serve
+    envVars:
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: commute-db
+          property: connectionString
+    autoDeploy: true
+
+databases:
+  - name: commute-db
+    dataabseName: smart-commute
+    plan: free
